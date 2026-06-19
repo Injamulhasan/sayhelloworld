@@ -6,42 +6,110 @@ import { getCollection } from 'astro:content';
 const allDocs = await getCollection('docs');
 const sorted = allDocs.sort((a, b) => a.data.order - b.data.order);
 
+// Group docs by section/project
 const grouped = sorted.reduce<Record<string, typeof sorted>>((acc, doc) => {
   const s = doc.data.section;
   if (!acc[s]) acc[s] = [];
   acc[s].push(doc);
   return acc;
 }, {});
+
+// Project descriptions metadata helper
+const projectMeta: Record<string, { desc: string; icon: string }> = {
+  "Portfolio Website": {
+    desc: "Complete technical reference and architecture details for this portfolio site, including performance optimization notes and Vercel setup.",
+    icon: "code"
+  },
+  "Neural Search Engine": {
+    desc: "Technical specification and API references for the AI-powered semantic vector search service.",
+    icon: "search"
+  }
+};
 ---
 
-<Layout title="Docs — Your Name">
+<Layout title="Documentation — Your Name">
   <div class="max-w-4xl mx-auto px-6 py-16">
-    <div class="mb-14">
-      <h1 class="text-2xl font-semibold tracking-tight text-foreground mb-3">Documentation</h1>
-      <p class="text-sm text-muted-foreground max-w-xl">
-        Technical references, architectural notes, and guides for the tools and systems I build and maintain.
+    <div class="mb-12 border-b border-border/40 pb-10">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+        <span class="text-xs font-mono font-medium tracking-widest text-muted-foreground uppercase">Project Technical Reference</span>
+      </div>
+      <h1 class="text-3xl font-bold tracking-tight text-foreground mb-4">Documentation</h1>
+      <p class="text-sm text-muted-foreground max-w-xl leading-relaxed">
+        Developer guides, architectural specifications, performance benchmarks, and deployment operational references for my open source systems and services.
       </p>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      {Object.entries(grouped).map(([section, docs]) => (
-        <div>
-          <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{section}</h2>
-          <ul class="space-y-2">
-            {docs.map(doc => (
-              <li>
-                <a
-                  href={`/docs/${doc.slug}`}
-                  class="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
-                >
-                  <span class="w-1 h-1 rounded-full bg-border group-hover:bg-primary transition-colors shrink-0"></span>
-                  {doc.data.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+    <!-- 2 Cards representing the projects -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {Object.entries(grouped).map(([project, docs], idx) => {
+        const meta = projectMeta[project] || { desc: "Project documentation files.", icon: "file" };
+        
+        return (
+          <div
+            class="group p-6 bg-card border border-border/70 rounded-xl hover:border-primary/50 hover:shadow-[0_8px_35px_rgb(0,0,0,0.015)] dark:hover:shadow-[0_8px_35px_rgba(59,130,246,0.015)] transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
+          >
+            <div class="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-primary/45 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            
+            <div>
+              <!-- Header with icon representation -->
+              <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-2">
+                  <div class="p-2 rounded-lg bg-primary/5 text-primary group-hover:bg-primary/10 transition-colors">
+                    {meta.icon === "code" ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                    )}
+                  </div>
+                  <span class="text-xs font-mono font-semibold text-muted-foreground/60">
+                    Project 0{idx + 1}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Title & Desc -->
+              <h2 class="text-lg font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
+                {project}
+              </h2>
+              
+              <p class="text-xs text-muted-foreground leading-relaxed mb-6">
+                {meta.desc}
+              </p>
+            </div>
+
+            <!-- List of Sub-Docs -->
+            <div class="border-t border-border/40 pt-4 mt-2">
+              <p class="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground/50 mb-3">Documents</p>
+              <ul class="space-y-2.5">
+                {docs.map(doc => (
+                  <li>
+                    <a
+                      href={`/docs/${doc.slug}`}
+                      class="flex items-center justify-between text-xs text-muted-foreground hover:text-foreground transition-colors group/link"
+                    >
+                      <span class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-border group-hover/link:bg-primary transition-colors shrink-0"></span>
+                        {doc.data.title}
+                      </span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/30 group-hover/link:text-primary group-hover/link:translate-x-0.5 transition-all">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )
+      })}
     </div>
   </div>
 </Layout>
