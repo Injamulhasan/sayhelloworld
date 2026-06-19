@@ -1,0 +1,70 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import { ThemeProvider } from '@/components/ui/theme-toggle';
+import { getCollection } from 'astro:content';
+
+interface Props {
+  title?: string;
+  currentSlug?: string;
+}
+
+const { title = 'Docs', currentSlug } = Astro.props;
+
+const allDocs = await getCollection('docs');
+const sorted = allDocs.sort((a, b) => a.data.order - b.data.order);
+
+const grouped = sorted.reduce<Record<string, typeof sorted>>((acc, doc) => {
+  const section = doc.data.section;
+  if (!acc[section]) acc[section] = [];
+  acc[section].push(doc);
+  return acc;
+}, {});
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} — Docs</title>
+    <ThemeProvider />
+  </head>
+  <body class="min-h-screen flex flex-col bg-background text-foreground font-sans antialiased">
+    <Nav />
+    <div class="flex flex-1 max-w-6xl mx-auto w-full px-4 md:px-6 py-10 gap-12">
+      <!-- Sidebar -->
+      <aside class="hidden md:block w-56 shrink-0">
+        <nav class="sticky top-24 space-y-6">
+          {Object.entries(grouped).map(([section, docs]) => (
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">{section}</p>
+              <ul class="space-y-1">
+                {docs.map(doc => (
+                  <li>
+                    <a
+                      href={`/docs/${doc.slug}`}
+                      class={`block text-sm py-1 px-2 rounded-md transition-colors ${
+                        currentSlug === doc.slug
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      {doc.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </aside>
+
+      <!-- Main content -->
+      <article class="flex-1 min-w-0 prose prose-neutral dark:prose-invert max-w-none">
+        <slot />
+      </article>
+    </div>
+  </body>
+</html>

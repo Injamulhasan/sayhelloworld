@@ -1,0 +1,151 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+
+const recentPosts = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 3);
+
+const bentoCards = [
+  {
+    title: 'AI Engineer',
+    subtitle: '@ Acme Corp',
+    description: 'Building production ML inference systems, LLM pipelines, and intelligent agents at scale.',
+    span: 'lg:col-span-2',
+    accent: true,
+  },
+  {
+    title: 'Founder',
+    subtitle: 'of NeuralStack',
+    description: 'Open-source platform for model evaluation and deployment orchestration.',
+    span: 'lg:col-span-1',
+  },
+  {
+    title: 'Technical Arsenal',
+    subtitle: '',
+    description: '',
+    tags: ['Python', 'PyTorch', 'TypeScript', 'Rust', 'Go', 'Kubernetes', 'Ray', 'LangChain', 'PostgreSQL', 'Redis'],
+    span: 'lg:col-span-1',
+  },
+  {
+    title: 'Education',
+    subtitle: 'MSc Machine Learning',
+    description: 'University of Edinburgh · 2021 — Thesis on efficient transformer architectures for low-resource NLP.',
+    span: 'lg:col-span-1',
+  },
+  {
+    title: 'Open Source',
+    subtitle: '1,400+ GitHub stars',
+    description: 'Contributor to transformers, vLLM, and LiteLLM. Maintainer of two active libraries.',
+    span: 'lg:col-span-1',
+  },
+];
+---
+
+<Layout title="Home — Your Name">
+  <div class="max-w-4xl mx-auto px-6 py-16 space-y-20">
+
+    <!-- Hero -->
+    <section class="flex flex-col sm:flex-row items-start gap-10">
+      <!-- Avatar -->
+      <div class="shrink-0">
+        <div class="w-28 h-28 rounded-2xl border border-border bg-muted flex items-center justify-center font-mono font-bold text-2xl text-muted-foreground select-none">
+          YN
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="flex flex-col gap-4">
+        <div>
+          <h1 class="text-3xl font-semibold tracking-tight text-foreground">Your Name</h1>
+          <p class="text-base text-muted-foreground mt-1 font-mono">Senior AI/ML Systems Engineer</p>
+        </div>
+        <p class="text-sm text-muted-foreground leading-relaxed max-w-lg">
+          Building high-performance inference engines, scalable data pipelines, and intelligent agents.
+          I bridge the gap between cutting-edge research and reliable production systems.
+        </p>
+        <div class="flex flex-wrap gap-3 pt-1">
+          <a
+            href="mailto:you@example.com"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            Get in touch
+          </a>
+          <a
+            href="/projects"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:bg-muted transition-colors"
+          >
+            View Work
+          </a>
+          <a
+            href="#"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:bg-muted transition-colors"
+          >
+            Resume
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bento Grid -->
+    <section>
+      <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-6">At a Glance</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {bentoCards.map((item) => (
+          <Card class={`${item.span || ''} ${item.accent ? 'border-primary/30 bg-primary/5 dark:bg-primary/10' : ''} transition-all hover:shadow-md hover:-translate-y-0.5`}>
+            <CardHeader>
+              <div class="flex items-baseline gap-2 flex-wrap">
+                <CardTitle>{item.title}</CardTitle>
+                {item.subtitle && <span class="text-xs text-muted-foreground font-mono">{item.subtitle}</span>}
+              </div>
+              {item.description && <CardDescription>{item.description}</CardDescription>}
+            </CardHeader>
+            {item.tags && (
+              <CardContent>
+                <div class="flex flex-wrap gap-1.5">
+                  {item.tags.map(tag => (
+                    <Badge variant="secondary" class="text-xs font-mono">{tag}</Badge>
+                  ))}
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        ))}
+      </div>
+    </section>
+
+    <!-- Recent Blog Posts -->
+    {recentPosts.length > 0 && (
+      <section>
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Recent Writing</h2>
+          <a href="/blog" class="text-xs text-primary hover:underline">All posts</a>
+        </div>
+        <div class="space-y-px border border-border rounded-xl overflow-hidden">
+          {recentPosts.map((post, i) => (
+            <a
+              href={`/blog/${post.slug}`}
+              class={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5 py-4 bg-card hover:bg-muted/50 transition-colors group ${i > 0 ? 'border-t border-border' : ''}`}
+            >
+              <div class="flex flex-col gap-0.5">
+                <span class="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{post.data.title}</span>
+                <span class="text-xs text-muted-foreground">{post.data.description}</span>
+              </div>
+              <div class="flex items-center gap-3 shrink-0">
+                {post.data.tags.slice(0, 1).map(tag => (
+                  <Badge variant="outline" class="text-xs">{tag}</Badge>
+                ))}
+                <span class="text-xs text-muted-foreground font-mono">
+                  {post.data.pubDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
+</Layout>

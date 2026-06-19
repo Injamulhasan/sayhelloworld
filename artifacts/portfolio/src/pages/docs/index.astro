@@ -1,0 +1,47 @@
+---
+export const prerender = true;
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const allDocs = await getCollection('docs');
+const sorted = allDocs.sort((a, b) => a.data.order - b.data.order);
+
+const grouped = sorted.reduce<Record<string, typeof sorted>>((acc, doc) => {
+  const s = doc.data.section;
+  if (!acc[s]) acc[s] = [];
+  acc[s].push(doc);
+  return acc;
+}, {});
+---
+
+<Layout title="Docs — Your Name">
+  <div class="max-w-4xl mx-auto px-6 py-16">
+    <div class="mb-14">
+      <h1 class="text-2xl font-semibold tracking-tight text-foreground mb-3">Documentation</h1>
+      <p class="text-sm text-muted-foreground max-w-xl">
+        Technical references, architectural notes, and guides for the tools and systems I build and maintain.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {Object.entries(grouped).map(([section, docs]) => (
+        <div>
+          <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{section}</h2>
+          <ul class="space-y-2">
+            {docs.map(doc => (
+              <li>
+                <a
+                  href={`/docs/${doc.slug}`}
+                  class="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+                >
+                  <span class="w-1 h-1 rounded-full bg-border group-hover:bg-primary transition-colors shrink-0"></span>
+                  {doc.data.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</Layout>
