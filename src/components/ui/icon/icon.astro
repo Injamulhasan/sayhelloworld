@@ -1,0 +1,232 @@
+---
+import type { HTMLAttributes } from "astro/types"
+import fs from "node:fs"
+import path from "node:path"
+import { cn } from "@/lib/utils"
+
+type Props = Omit<HTMLAttributes<"svg">, "name" | "href"> & {
+  href?: HTMLAttributes<"a">["href"]
+  name?: string | number | null
+}
+
+const { name, href, ...props } = Astro.props
+
+const hrefMap = {
+  "x.com": "x",
+  twitter: "x", // Map twitter to x since twitter.svg doesn't exist anymore
+  facebook: "facebook",
+  instagram: "instagram",
+  pinterest: "pinterest",
+  youtube: "youtube",
+  tiktok: "tiktok",
+  snapchat: "snapchat",
+  reddit: "reddit",
+  tumblr: "tumblr",
+  "wa.me": "whatsapp",
+  telegram: "telegram",
+  discord: "discord",
+  vimeo: "vimeo",
+  flickr: "flickr",
+  yelp: "yelp",
+  spotify: "spotify",
+  behance: "behance",
+  dribbble: "dribbble",
+  soundcloud: "soundcloud",
+  github: "github",
+  twitch: "twitch",
+  "tel:": "phone",
+  "mailto:": "mail",
+  "maps.app.goo.gl": "map-pin",
+  linkedin: "linkedin",
+} as const
+
+// @ts-ignore
+import sun from "lucide-static/icons/sun.svg?raw"
+// @ts-ignore
+import moon from "lucide-static/icons/moon.svg?raw"
+// @ts-ignore
+import phone from "lucide-static/icons/phone.svg?raw"
+// @ts-ignore
+import mail from "lucide-static/icons/mail.svg?raw"
+// @ts-ignore
+import mapPin from "lucide-static/icons/map-pin.svg?raw"
+
+// @ts-ignore
+import x from "simple-icons/icons/x.svg?raw"
+// @ts-ignore
+import facebook from "simple-icons/icons/facebook.svg?raw"
+// @ts-ignore
+import instagram from "simple-icons/icons/instagram.svg?raw"
+// @ts-ignore
+import pinterest from "simple-icons/icons/pinterest.svg?raw"
+// @ts-ignore
+import youtube from "simple-icons/icons/youtube.svg?raw"
+// @ts-ignore
+import tiktok from "simple-icons/icons/tiktok.svg?raw"
+// @ts-ignore
+import snapchat from "simple-icons/icons/snapchat.svg?raw"
+// @ts-ignore
+import reddit from "simple-icons/icons/reddit.svg?raw"
+// @ts-ignore
+import tumblr from "simple-icons/icons/tumblr.svg?raw"
+// @ts-ignore
+import whatsapp from "simple-icons/icons/whatsapp.svg?raw"
+// @ts-ignore
+import telegram from "simple-icons/icons/telegram.svg?raw"
+// @ts-ignore
+import discord from "simple-icons/icons/discord.svg?raw"
+// @ts-ignore
+import vimeo from "simple-icons/icons/vimeo.svg?raw"
+// @ts-ignore
+import flickr from "simple-icons/icons/flickr.svg?raw"
+// @ts-ignore
+import yelp from "simple-icons/icons/yelp.svg?raw"
+// @ts-ignore
+import spotify from "simple-icons/icons/spotify.svg?raw"
+// @ts-ignore
+import behance from "simple-icons/icons/behance.svg?raw"
+// @ts-ignore
+import dribbble from "simple-icons/icons/dribbble.svg?raw"
+// @ts-ignore
+import soundcloud from "simple-icons/icons/soundcloud.svg?raw"
+// @ts-ignore
+import github from "simple-icons/icons/github.svg?raw"
+// @ts-ignore
+import twitch from "simple-icons/icons/twitch.svg?raw"
+
+// Hardcode LinkedIn icon SVG (since simple-icons removed it due to brand/trademark guidelines)
+const linkedin = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`
+
+const staticIcons: Record<string, string> = {
+  sun,
+  moon,
+  phone,
+  mail,
+  "map-pin": mapPin,
+  x,
+  facebook,
+  instagram,
+  pinterest,
+  youtube,
+  tiktok,
+  snapchat,
+  reddit,
+  tumblr,
+  whatsapp,
+  telegram,
+  discord,
+  vimeo,
+  flickr,
+  yelp,
+  spotify,
+  behance,
+  dribbble,
+  soundcloud,
+  github,
+  twitch,
+  linkedin,
+}
+
+// Find icon name
+const getIconName = (): string | undefined => {
+  if (name === "x.com" || name === "twitter") {
+    return "x"
+  } else if (name) {
+    return String(name)
+  } else if (href) {
+    const hrefKey = Object.keys(hrefMap).find((key) =>
+      href.toString().includes(key)
+    )
+    if (hrefKey) {
+      return hrefMap[hrefKey as keyof typeof hrefMap]
+    }
+  }
+  return undefined
+}
+
+const iconName = getIconName()
+
+// Get SVG content
+const getSvgContent = (name: string): { svg: string; isSimpleIcon: boolean } | null => {
+  // Check static icons first
+  if (staticIcons[name]) {
+    return {
+      svg: staticIcons[name],
+      isSimpleIcon: name !== "sun" && name !== "moon" && name !== "phone" && name !== "mail" && name !== "map-pin",
+    }
+  }
+
+  // Fallback to reading file dynamically using fs (at build/dev time)
+  try {
+    const lucidePath = path.join(process.cwd(), "node_modules", "lucide-static", "icons", `${name}.svg`)
+    if (fs.existsSync(lucidePath)) {
+      return {
+        svg: fs.readFileSync(lucidePath, "utf-8"),
+        isSimpleIcon: false,
+      }
+    }
+
+    const simplePath = path.join(process.cwd(), "node_modules", "simple-icons", "icons", `${name}.svg`)
+    if (fs.existsSync(simplePath)) {
+      return {
+        svg: fs.readFileSync(simplePath, "utf-8"),
+        isSimpleIcon: true,
+      }
+    }
+  } catch (e) {
+    // Ignore errors
+  }
+
+  return null
+}
+
+const iconData = iconName ? getSvgContent(iconName) : null
+
+// Parse the SVG content to extract attributes and inner HTML
+const parseSVG = (svgString: string) => {
+  const match = svgString.match(/^<svg([^>]*)>([\s\S]*)<\/svg>$/i)
+  if (!match) return null
+  const attrsString = match[1]
+  const innerHTML = match[2]
+
+  const attrs: Record<string, string> = {}
+  const attrRegex = /([\w\-:]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g
+  let attrMatch
+  while ((attrMatch = attrRegex.exec(attrsString)) !== null) {
+    const attrName = attrMatch[1]
+    const attrValue = attrMatch[2] || attrMatch[3] || attrMatch[4]
+    attrs[attrName] = attrValue
+  }
+  return { attrs, innerHTML }
+}
+
+const parsed = iconData ? parseSVG(iconData.svg) : null
+
+// Merge default properties with parsed attributes and incoming props
+const mergedAttrs = parsed ? { ...parsed.attrs } : {}
+const defaultClass = parsed ? parsed.attrs.class : ""
+const extraProps: Record<string, any> = {}
+
+if (iconData) {
+  if (iconData.isSimpleIcon) {
+    extraProps.height = 24
+    extraProps.width = 24
+    extraProps.fill = "currentColor"
+  } else {
+    extraProps.height = 24
+    extraProps.width = 24
+  }
+}
+---
+
+{
+  parsed && (
+    <svg
+      {...mergedAttrs}
+      {...extraProps}
+      {...props}
+      class={cn("size-[1em] text-base", defaultClass, props.class)}
+      set:html={parsed.innerHTML}
+    />
+  )
+}
