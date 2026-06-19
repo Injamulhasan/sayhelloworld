@@ -1,0 +1,62 @@
+You are an expert Frontend Engineer specializing in Astro, Tailwind CSS, TypeScript, and Git-based CMS integrations. 
+
+Your task is to scaffold and build a personal portfolio and technical documentation website based on the following specifications, referencing the layout and structural components seen in the provided images: "screencapture-taufiq-cc-2026-06-19-11_41_43.jpg" (Home/About Page layout) and "screencapture-taufiq-cc-projects-2026-06-19-11_42_00.jpg" (Projects grid filtering view).
+
+### 1. Core Tech Stack & UI Frameworks
+- Framework: Astro (Latest stable version, Hybrid output mode)
+- Styling: Tailwind CSS
+- Component Library: Fulldev UI (utilizing its primitives for grids, badges, cards, and layouts)
+- Icons: astro-icon
+- CMS: Keystatic (Local/Git-based configuration)
+
+### 2. File & Directory Structure
+Please organize the workspace cleanly using this structural layout:
+├── src/
+│   ├── content/          # Content Collections managed by Keystatic
+│   │   ├── config.ts     # Zod schema validation
+│   │   ├── blog/         # Markdown/MDX content for blog posts
+│   │   ├── projects/     # Markdown/MDX content for portfolio cards
+│   │   └── docs/         # Markdown/MDX content for technical documentations
+│   ├── components/       # Reusable wrapper structures and Navigation
+│   ├── layouts/          # Main Site Layout & LayoutDoc (Split Sidebar for documentation)
+│   └── pages/            # Routing engine
+│       ├── index.astro   # Main Home Page (Bento grid + Dynamic recent blog stream)
+│       ├── projects.astro# Filterable Project Archive
+│       ├── blog/
+│       │   ├── index.astro       # Blog list index
+│       │   └── [...slug].astro   # Dynamic blog item reader
+│       └── docs/
+│           ├── index.astro       # Docs main splash entry page
+│           └── [...slug].astro   # Left-sidebar multi-column technical doc viewer
+├── keystatic.config.ts   # Keystatic collections setup
+└── astro.config.mjs      # Astro integration hub
+
+### 3. Detailed Component & Page Requirements
+
+#### A. Global Layout & Styling
+- Replicate the minimalistic dark/light aesthetic from the references. Center-aligned minimal navigation links with right-aligned small, clean icon buttons for social handles (GitHub, LinkedIn, Scholar, etc.).
+
+#### B. Home Page (`src/pages/index.astro`)
+- Reference: "screencapture-taufiq-cc-2026-06-19-11_41_43.jpg"
+- Hero Container: Left side profile picture (rounded container with thin border), right side featuring main typography (Name, dynamic status subheadings, contact/resume call-to-actions).
+- Bento Grid Matrix: A 3x2 matrix of Fulldev UI cards breaking down professional milestones ("AI Engineer @...", "Founder of...", "Technical Arsenal", "Education").
+- Dynamic Blog Stream: Fetch the latest 3 entries from the `blog` collection using `getCollection()` and render them dynamically in a clean list or grid at the bottom.
+
+#### C. Projects Showcase Page (`src/pages/projects.astro`)
+- Reference: "screencapture-taufiq-cc-projects-2026-06-19-11_42_00.jpg"
+- Header area detailing a descriptive introductory context block.
+- Segmented control filtering toggles ("All", "Web", "ML", "APIs") matching the centered interactive pills.
+- Document-mapped project cards featuring: Year, System Tag badge (e.g., WEB, ML), bold title, description block, tech-stack string array, custom feature pill tags, and clean bottom-row links to "Code", "Live", or "Demo" where applicable.
+
+#### D. Astro Documentation Format Template (`src/layouts/LayoutDoc.astro` & `src/pages/docs/`)
+- Implement a two-column documentation design.
+- Left Sidebar: Automatically aggregates all entries inside the `docs` content collection, groups them by their frontmatter `section` label, sorts them by an `order` integer weight, and outputs clean link points.
+- Right Area: Typography content sheet (`prose dark:prose-invert`) rendering code snippets, data tables, structural text, and markdown files natively.
+
+### 4. Keystatic Setup Code Requirements
+Configure `keystatic.config.ts` to output local files into your target paths:
+- `blog` collection schema: title (slug), pubDate, description, content (document).
+- `projects` collection schema: title (slug), year, category (select: WEB, ML, API), summary, tags (array), links (object containing live, code, demo).
+- `docs` collection schema: title (slug), section (text), order (number), content (document supporting markdown blocks, tables, and multi-language code snippets).
+
+Please write highly performant, modular, type-safe TypeScript code. Start by initializing the configuration files and the base layouts. Do you understand the plan? If so, generate the setup steps and core files.
