@@ -9,7 +9,7 @@ type Props = Omit<HTMLAttributes<"svg">, "name" | "href"> & {
   name?: string | number | null
 }
 
-const { name, href, ...props } = Astro.props
+const { name, href, class: className, ...props } = Astro.props
 
 const hrefMap = {
   "x.com": "x",
@@ -184,7 +184,8 @@ const iconData = iconName ? getSvgContent(iconName) : null
 
 // Parse the SVG content to extract attributes and inner HTML
 const parseSVG = (svgString: string) => {
-  const match = svgString.match(/^<svg([^>]*)>([\s\S]*)<\/svg>$/i)
+  const cleanSvg = svgString.replace(/<!--[\s\S]*?-->/g, "").trim()
+  const match = cleanSvg.match(/^<svg([^>]*)>([\s\S]*)<\/svg>$/i)
   if (!match) return null
   const attrsString = match[1]
   const innerHTML = match[2]
@@ -205,6 +206,7 @@ const parsed = iconData ? parseSVG(iconData.svg) : null
 // Merge default properties with parsed attributes and incoming props
 const mergedAttrs = parsed ? { ...parsed.attrs } : {}
 const defaultClass = parsed ? parsed.attrs.class : ""
+delete mergedAttrs.class
 const extraProps: Record<string, any> = {}
 
 if (iconData) {
@@ -225,7 +227,7 @@ if (iconData) {
       {...mergedAttrs}
       {...extraProps}
       {...props}
-      class={cn("size-[1em] text-base", defaultClass, props.class)}
+      class={cn("size-[1em] text-base", defaultClass, className)}
       set:html={parsed.innerHTML}
     />
   )
