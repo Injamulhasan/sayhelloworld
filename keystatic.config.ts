@@ -42,6 +42,7 @@ export default config({
           label: 'Category',
           options: [
             { label: 'Web', value: 'WEB' },
+            { label: 'CMS', value: 'CMS' },
             { label: 'Machine Learning', value: 'ML' },
             { label: 'API', value: 'API' },
           ],
